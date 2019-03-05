@@ -1,4 +1,4 @@
-from utils.DataAccess import DataAccess
+import utils.ReadUtil as ru
 import jieba.analyse
 import math
 
@@ -75,7 +75,7 @@ def my_df(corpus):
 if __name__ == "__main__":
 
     corpus = []
-    data = DataAccess.get_item_names("./data/train.tsv")
+    data = ru.get_item_names("./data/train.tsv")
     LEN = len(data)
     index = 0
     for item in data:

@@ -10,7 +10,7 @@ import utils.ReadUtil as ru
 import utils.jiebaExtend as jiebaExtend
 
 
-def filter_out_classes(file, level=1, method = 0):
+def filter_out_classes(file, level=1, method=0):
     """
     输入原始数据,为所有类别进行编号，并返回相应的字典
     :param file:原始数据文件名
@@ -53,7 +53,7 @@ def filter_out_classes(file, level=1, method = 0):
     return res_dict
 
 
-def transfer_to_ft_format(file_path, output_path, class_path):
+def transfer_to_ft_format(file_path, output_path, class_path, trainFileName="train.txt", testFileName="test.txt"):
     """
     将数据转换为fastText的指定格式
     :param file_path: 数据文件的路径
@@ -95,8 +95,8 @@ def transfer_to_ft_format(file_path, output_path, class_path):
     traindf = df.loc[:400000, :]
     testdf = df.loc[400001:500000, :]
 
-    traindf.to_csv(output_path + '/test.txt', sep='\t', index=False, encoding="utf-8", header=0)
-    testdf.to_csv(output_path + '/train.txt', sep='\t', index=False, encoding="utf-8", header=0)
+    traindf.to_csv(output_path + '/' + testFileName, sep='\t', index=False, encoding="utf-8", header=0)
+    testdf.to_csv(output_path + '/' + trainFileName, sep='\t', index=False, encoding="utf-8", header=0)
 
 
 def trans_to_detail(labs, path):
