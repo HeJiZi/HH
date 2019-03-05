@@ -1,46 +1,68 @@
-import classData as  c
-# print(c.getClasses("./train.tsv"))
-import jieba
-import jieba.analyse
-import pandas as pd
-import random
+import utils.ReadUtil as ru
 
-trainPath = './data/train.tsv'
-idfPath = "./data/idf.txt.big"
-vecsPath = "./data/vectors.csv"
+from utils.PathUtil import Path
+import utils.CutExtend as cutEx
+import core.preprocess.DataFrequence as df
 
-# segPath = './data/segment'
-# modelPath = './model/baike.model'
-# vecPath = './model/word2vec_format'
-encode = 'utf-8'
+class Preprocess:
+    df_dict={}
+    path = Path()
 
-def turnFeaVecs(items, wordDic):
-    maxLength = 0
-    vecs=[]
-    clsDic = c.getClasses(trainPath)
+    def calculate_word_cout(self):
+        corpus = []
+        data = ru.get_item_names(self.path.ori_data)
+        LEN = len(data)
+        index = 0
+        for item in data:
+            index += 1
+            if index % 1024 == 0:
+                print("正在切分第" + str(index) + "数据\n")
+            item = cutEx.seg_depart(item)
+            text = " ".join(str(i) for i in item.split(" "))
+            corpus.append(text)
 
-    # 对x进行预处理
-    for index in range(len(items)):
-        tags = jieba.analyse.extract_tags(items.loc[index,0])
-        tagsLen = len(tags)
-        if tagsLen>maxLength:
-            maxLength = tagsLen
-        vec = []
-        for tag in tags:
-            vec.append(wordDic[tag] / len(wordDic)) # 对数据进行归一化
-        vecs.append(vec)
+        print("开始计算DF\n")
 
-    # 对数据顺序进行预处理
-    for index in range(len(vecs)):
-        xlen = len(vecs[i])
-        dlen = maxLength - xlen  # 长度不够填充空值
-        while dlen > 0:
-            vecs[index].append(None)
-            dlen = -1
-        # 打乱词的顺序
-        random.shuffle(vecs[i])
-        # 添加y
-        cls = items.loc[index, 1].split('--', 1)
-        vecs[i].insert(0, clsDic[cls])
+        index = 0
+        IDFdict = df.my_df(corpus)
+        IDFdict = df.sort_dict(IDFdict)
 
-    return vecs
+        fp = open(self.path.count, 'w', encoding="utf-8")
+        for j in IDFdict:
+            fp.write(j + ' ' + str(IDFdict[j]) + '\n')
+        fp.close()
+        print("完成")
+
+        self.df_dict = IDFdict
+        return IDFdict
+
+
+    def init_dict(self,have_count_file = False):
+        df = {}
+        if(have_count_file):
+            with open(self.path.count, 'r', encoding="utf-8") as count_file:
+                for line in count_file:
+                    t = line.split(' ')
+                    df[t[0]] = t[1].strip() # 去除行尾的换行符
+        else:
+            df = self.calculate_word_cout()
+
+        custom_dict_file = open(self.path.custom_dict, 'w', encoding="utf-8")
+        with open(self.path.dict, 'r', encoding="utf-8") as dict_file:
+            for line in dict_file:
+                t = line.split(' ')
+                if(t[0].strip().isspace()):
+                    print("出现空白符",t[0])
+                if(t[0].strip() in df.keys()):
+                    custom_dict_file.write(line)
+
+
+
+# def get_vectors(init = True):
+#     if(init):
+#         preprocess = Preprocess()
+#         preprocess.calculate_word_cout()
+
+
+# Preprocess().init_dict(have_count_file=True)
+Preprocess().calculate_word_cout()

@@ -1,4 +1,4 @@
-import jieba
+import core.preprocess.Cut as Cut
 import numpy as np
 from utils.PathUtil import Path
 
@@ -7,7 +7,7 @@ from utils.PathUtil import Path
 
 _stopwords = {}
 _path = Path()
-
+cut = Cut.get_cut()
 
 def stopwords():
     if(_stopwords.__len__() == 0):
@@ -19,7 +19,7 @@ def stopwords():
 
 def seg_depart(sentence):
     # 对文档中的一行进行中文分词
-    sentence_depart = jieba.cut(sentence.strip())
+    sentence_depart = cut.do(sentence.strip())
     # 创建一个停用词列表
     # 输出结果
     departed_str = ''
@@ -37,7 +37,7 @@ def seg_depart(sentence):
 
 def seg_depart_return_generator(sentence, stop_path):
     # 对文档中的每一行进行中文分词
-    sentence_depart = jieba.cut(sentence.strip())
+    sentence_depart = cut.do(sentence.strip())
     # 创建一个停用词列表
     # 输出结果
     departed_str = ''
