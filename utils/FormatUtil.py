@@ -5,7 +5,6 @@ import pandas as pd
 from sklearn.utils import shuffle
 import re
 import utils.DrawUtil as du
-import jieba
 import utils.ReadUtil as ru
 import utils.JiebaExtend as JiebaExtend
 from utils.PathUtil import Path
@@ -86,7 +85,7 @@ def transfer_to_ft_format(file_path, output_path, class_path, trainFileName="tra
     print('正在分词....')
     for index, row in df.iterrows():
         name = row['ITEM_NAME']
-        row['ITEM_NAME'] = " ".join(JiebaExtend.seg_depart(name, Path().stop_words))
+        row['ITEM_NAME'] = " ".join(JiebaExtend.seg_depart(name))
         # row['ITEM_NAME'] = " ".join(jieba.cut(name, cut_all=True))
     print('分词完成')
     du.print_sep()
