@@ -37,6 +37,14 @@ class Path:
     def custom_dict(self):
         return os.path.join(self.data_directory, 'custom_dict.txt')
 
+    @property
+    def record_directory(self):
+        return os.path.join(self.data_directory, 'record')
+
+    @property
+    def record_result(self):
+        return Path.join(self.record_directory, 'record_result.txt')
+
     @staticmethod
     def join(path, paths):
         return os.path.join(path, paths)

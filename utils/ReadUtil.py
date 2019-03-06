@@ -60,6 +60,6 @@ def get_classes(classes_file):
                     if i < ru_gc_len - 2:
                         type_name += ' '
                 else:
-                    type_index = t[i]
-            dic[type_name] = type_index  # 去除行尾的换行符
+                    type_index = t[i].strip()  # 去除行尾的换行符
+            dic[type_name] = type_index
     return dic
