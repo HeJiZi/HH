@@ -25,6 +25,19 @@ class Path:
     def stop_words(self):
         return os.path.join(self.data_directory, 'stop_words.txt')
 
+    @property
+    def count(self):
+        return os.path.join(self.data_directory, 'count.txt')
+
+    @property
+    def dict(self):
+        return os.path.join(self.data_directory, 'dict.txt')
+
+    @property
+    def custom_dict(self):
+        return os.path.join(self.data_directory, 'custom_dict.txt')
+
     @staticmethod
     def join(path, paths):
         return os.path.join(path, paths)
+

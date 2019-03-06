@@ -2,3 +2,5 @@
 /.idea
 /data
 !/data/train.tsv
+!/data/dict.txt
+*.pyc
