@@ -78,8 +78,7 @@ def transfer_to_ft_format(file_path, output_path, class_path,method=0, train_fil
     du.print_sep()
     print('正在转换类别编码....')
     count = 0
-    for key in dic.keys():
-        print(key)
+
     if method == 1:
         level_dics=[]
         for index, row in  df.iterrows():
@@ -213,10 +212,3 @@ def trans_to_detail(labs, path):
         return detail
 
 
-import utils.ReadUtil as ru
-from utils.PathUtil import Path
-import numpy as np
-if __name__ == "__main__":
-    pu = Path()
-    labs = np.array(ru.get_items(pu.ori_data))[:, 1]
-    res = trans_to_detail(labs, './detail.txt')
