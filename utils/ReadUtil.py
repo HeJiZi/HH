@@ -40,6 +40,7 @@ def read_json2dict(path):
     return json.loads(fp.readline())
 
 
+# noinspection PyShadowingBuiltins
 def get_classes(classes_file):
     """
     获得类别文件中的类别信息
@@ -47,11 +48,18 @@ def get_classes(classes_file):
     :return: 类别字典
     """
     dic = {}
-
     with open(classes_file, 'r', encoding="utf-8") as clsFile:
         for line in clsFile:
             t = line.split(' ')
-            dic[t[0]] = t[1].replace('\n', '')  # 去除行尾的换行符
+            type_name = ''
+            type_index = ''
+            ru_gc_len = len(t)
+            for i in range(0, ru_gc_len):
+                if i < ru_gc_len - 1:
+                    type_name += t[i]
+                    if i < ru_gc_len - 2:
+                        type_name += ' '
+                else:
+                    type_index = t[i]
+            dic[type_name] = type_index  # 去除行尾的换行符
     return dic
-
-

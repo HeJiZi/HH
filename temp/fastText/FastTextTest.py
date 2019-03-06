@@ -15,7 +15,7 @@ resultRecordPath = Path.join(dataDirectoryPath,"record_result.txt")
 modelPath = Path.join(Path.join(p.root, 'model'), 'fasttext.model')
 
 
-wu.export_classes(fu.filter_out_classes(oriDataPath, 1), clsPath)
+wu.export_classes(fu.filter_out_classes(oriDataPath, 3), clsPath)
 fu.transfer_to_ft_format(oriDataPath, dataDirectoryPath, clsPath)
 
 # 训练模型

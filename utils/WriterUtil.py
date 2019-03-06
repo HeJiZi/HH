@@ -11,5 +11,5 @@ def export_classes(cls_dic, output_file):
     """
     of = open(output_file, "w", encoding="utf-8")
     for className in cls_dic.keys():
-        of.write(className + " " + str(cls_dic[className]) + '\n')
+        of.write(className.strip() + " " + str(cls_dic[className]) + '\n')
     of.close()

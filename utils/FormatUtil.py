@@ -43,20 +43,23 @@ def filter_out_classes(file, level=1, method=0):
         for j in range(level):
             cls_name += classes[j]
             # j+1 == currentLevel
-            if j + 1 < len(classes) & method == 0:
+            if j + 1 < len(classes) and method == 0:
                 cls_name += '--'
 
         # 放入字典
         if not cls_name in res_dict.keys():
-            res_dict[cls_name] = index
+            res_dict[cls_name.strip()] = index
             index += 1
 
     return res_dict
 
 
-def transfer_to_ft_format(file_path, output_path, class_path, trainFileName="train.txt", testFileName="test.txt"):
+def transfer_to_ft_format(file_path, output_path, class_path,method=0, train_file_name="train.txt", test_file_name="test.txt"):
     """
     将数据转换为fastText的指定格式
+    :param method:转换类别编码的算法
+    :param test_file_name: mean as name
+    :param train_file_name: mean as name
     :param file_path: 数据文件的路径
     :param output_path: 导出文件的目录路径
     :param class_path: 类别文件的路径
@@ -75,12 +78,23 @@ def transfer_to_ft_format(file_path, output_path, class_path, trainFileName="tra
     du.print_sep()
     print('正在转换类别编码....')
     count = 0
-    keys = dic.keys()
-    klen = len(keys)
-    for key in keys:
-        df.replace(regex=re.compile('^' + key + '[\s\S]*'), value='_label_' + str(dic[key]), inplace=True)
-        count += 1
-        print('已转化:%.2f%%' % ((count/klen) * 100))
+    for key in dic.keys():
+        print(key)
+    if method == 1:
+        level_dics=[]
+        for index, row in  df.iterrows():
+            type = row['TYPE']
+            row["TYPE"] = '_label_' + dic[type]
+            count += 1
+            if count % 10000 == 0:
+                print('已转化:%.2f%%' % ((count / len(df)) * 100))
+    else:
+        keys = dic.keys()
+        klen = len(keys)
+        for key in keys:
+            df.replace(regex=re.compile('^' + key + '[\s\S]*'), value='_label_' + str(dic[key]), inplace=True)
+            count += 1
+            print('已转化:%.2f%%' % ((count/klen) * 100))
 
     du.print_sep()
     print('正在分词....')
@@ -96,8 +110,8 @@ def transfer_to_ft_format(file_path, output_path, class_path, trainFileName="tra
     traindf = df.loc[:400000, :]
     testdf = df.loc[400001:500000, :]
 
-    traindf.to_csv(output_path + '/' + testFileName, sep='\t', index=False, encoding="utf-8", header=0)
-    testdf.to_csv(output_path + '/' + trainFileName, sep='\t', index=False, encoding="utf-8", header=0)
+    traindf.to_csv(output_path + '/' + test_file_name, sep='\t', index=False, encoding="utf-8", header=0)
+    testdf.to_csv(output_path + '/' + train_file_name, sep='\t', index=False, encoding="utf-8", header=0)
 
 
 def trans_to_detail(labs, path):
@@ -198,3 +212,11 @@ def trans_to_detail(labs, path):
             f.write(detail)
         return detail
 
+
+import utils.ReadUtil as ru
+from utils.PathUtil import Path
+import numpy as np
+if __name__ == "__main__":
+    pu = Path()
+    labs = np.array(ru.get_items(pu.ori_data))[:, 1]
+    res = trans_to_detail(labs, './detail.txt')
