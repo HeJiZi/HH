@@ -15,17 +15,17 @@ resultRecordPath = p.record_result
 modelPath = Path.join(Path.join(p.root, 'model'), 'fasttext.model')
 
 
-wu.export_classes(fu.filter_out_classes(oriDataPath, 1), clsPath)
-fu.transfer_to_ft_format(oriDataPath, dataDirectoryPath, clsPath, method=0)
+# wu.export_classes(fu.filter_out_classes(oriDataPath, 3), clsPath)
+# fu.transfer_to_ft_format(oriDataPath, dataDirectoryPath, clsPath, method=1)
 
 # 训练模型
 print('--------------------')
 print('训练模型中....')
 dim = 50
-epoch = 40
-word_ngrams = 1
+epoch = 8
+word_ngrams = 2
 lr = 0.1
-lr_update_rate = 150
+lr_update_rate = 125
 loss = 'softmax'     # ns,hs,softmax
 classifier = fasttext.supervised(formatedTrainPath, modelPath,
                                  label_prefix="_label_",
@@ -35,11 +35,16 @@ classifier = fasttext.supervised(formatedTrainPath, modelPath,
                                  word_ngrams=word_ngrams,
                                  bucket=2000000,
                                  lr_update_rate=lr_update_rate,
-                                 loss=loss)   # bucket=2000000
+                                 loss=loss,
+                                 )   # bucket=2000000
 print('训练完毕')
 print('--------------------')
 # load训练好的模型
-# classifier = fasttext.load_model('./model/fasttext.model.bin', label_prefix='_label_')
+# classifier = fasttext.load_model(formatedTrainPath+'.bin', label_prefix='_label_')
+
+# result = classifier.test(formatedTrainPath)
+# print(result.precision)
+# print(result.recall)
 
 result = classifier.test(formatedTestPath)
 print(result.precision)

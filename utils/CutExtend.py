@@ -5,19 +5,21 @@ from utils.PathUtil import Path
 
 # 去除停用词后的分词
 
-_stopwords = {}
+_stopwords = None
 _path = Path()
 cut = Cut.get_cut()
 
 def stopwords():
-    if(_stopwords.__len__() == 0):
+    global _stopwords
+    if(_stopwords == None):
+        _stopwords = set()
         with open(_path.stop_words, 'r', encoding='utf-8') as wordsFile:
             for line in wordsFile:
-                _stopwords[line.strip()] = True
+                _stopwords.add(line.strip())
     return _stopwords
 
 
-def seg_depart(sentence):
+def  seg_depart(sentence):
     # 对文档中的一行进行中文分词
     sentence_depart = cut.do(sentence.strip())
     # 创建一个停用词列表

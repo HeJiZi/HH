@@ -109,8 +109,8 @@ def transfer_to_ft_format(file_path, output_path, class_path, method=0, train_fi
     traindf = df.loc[:400000, :]
     testdf = df.loc[400001:500000, :]
 
-    traindf.to_csv(Path().join(output_path, test_file_name), sep='\t', index=False, encoding="utf-8", header=0)
-    testdf.to_csv(Path().join(output_path, train_file_name), sep='\t', index=False, encoding="utf-8", header=0)
+    traindf.to_csv(Path().join(output_path, train_file_name), sep='\t', index=False, encoding="utf-8", header=0)
+    testdf.to_csv(Path().join(output_path, test_file_name), sep='\t', index=False, encoding="utf-8", header=0)
 
 
 def trans_to_detail(labs, path):
