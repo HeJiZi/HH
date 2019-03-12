@@ -19,11 +19,17 @@ class Path:
 
     @property
     def save_directory(self):
-        return os.path.join(self.data_directory, 'save')
+        path = os.path.join(self.data_directory, 'save')
+        if os.path.isdir(path) is False:
+            os.mkdir(path)
+        return path
 
     @property
     def record_directory(self):
-        return os.path.join(self.data_directory, 'record')
+        path = os.path.join(self.data_directory, 'record')
+        if os.path.isdir(path) is False:
+            os.mkdir(path)
+        return path
 
     @property
     def ori_data(self):
