@@ -46,8 +46,9 @@ class Preprocess:
                 input_row.extend(self._compute_sub_word(word))
             input_row.extend(self._compute_ngram_word(words))
             inputs_vec.append(input_row)
-            if index & 0xff == 0:
+            if index & 0xfff == 0:
                 print('已完成[{0}/{1}]---------------------'.format(index + 1, ori_df_len))
+        print('已完成')
         self._input_df = pd.DataFrame(inputs_vec).fillna(0).astype(np.int32)
         return self._input_df
 
