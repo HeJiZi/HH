@@ -2,7 +2,6 @@ from core.preprocess.Preprocess import Preprocess
 from utils.PathUtil import Path
 import pandas as pd
 import numpy as np
-from sklearn.utils import shuffle
 from keras import layers
 from keras import models
 from keras.layers.embeddings import Embedding
@@ -10,9 +9,9 @@ from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
 
 p = Path()
-# pre = Preprocess(p.ori_data, level=1)
-# arry = pre.compile()
-# df = pd.DataFrame(arry).fillna(0).astype(np.int32)
+pre = Preprocess(p.ori_data, level=1)
+arry = pre.compile()
+df = pd.DataFrame(arry).fillna(0).astype(np.int32)
 # df.to_csv(p.save_directory+'/vectors.csv', sep=',', index=False, encoding="utf-8", header=0)
 # pre.save_type_dic(p.type_code)
 # pre.save_word_dic(p.word_code)

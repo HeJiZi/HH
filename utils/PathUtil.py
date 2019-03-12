@@ -67,6 +67,10 @@ class Path:
     def word_code(self):
         return self.join(self.save_directory, 'word_code.txt')
 
+    @property
+    def vectors(self):
+        return self.join(self.save_directory, 'vectors.csv')
+
     @staticmethod
     def join(path, paths):
         return os.path.join(path, paths)

@@ -1,5 +1,6 @@
 import pandas as pd
 import core.preprocess.Cut as cut
+import numpy as np
 
 
 class Preprocess:
@@ -8,7 +9,6 @@ class Preprocess:
     _type_dic = {}
     _word_dic = {}
     _ori_df = None
-    _input_df = None
 
     _maxn = 0
     _minn = 0
@@ -24,6 +24,7 @@ class Preprocess:
         self._maxn = maxn
         self._wordngram = wordngram
         self._level = level
+        self._input_df = None
 
     def compile(self):
         """
@@ -32,7 +33,7 @@ class Preprocess:
         """
         _ori_df = pd.read_csv(self._data_file, sep='\t', encoding=self._encoding, nrows=None)
         ori_df_len = len(_ori_df)
-        _inputs_vec = []
+        inputs_vec = []
         for index, row in _ori_df.iterrows():
             item_name = row[0]
             type = row[1]
@@ -44,21 +45,41 @@ class Preprocess:
                 input_row.append(self._word_dic[word])
                 input_row.extend(self._compute_sub_word(word))
             input_row.extend(self._compute_ngram_word(words))
-            _inputs_vec.append(input_row)
-            print('已完成[{0}/{1}]---------------------'.format(index + 1, ori_df_len))
-        return _inputs_vec
+            inputs_vec.append(input_row)
+            if index & 0xff == 0:
+                print('已完成[{0}/{1}]---------------------'.format(index + 1, ori_df_len))
+        self._input_df = pd.DataFrame(inputs_vec).fillna(0).astype(np.int32)
+        return self._input_df
 
-    def save_word_dic(self, file):
-        of = open(file, "w", encoding="utf-8")
+    def save(self, vector_file, word_file, type_file):
+        print('正在保存向量....')
+        self._input_df.to_csv(vector_file, sep=',', index=False, encoding="utf-8", header=0)
+        print('向量保存成功')
+        print('正在保存word编号....')
+        of = open(word_file, "w", encoding="utf-8")
         for word in self._word_dic.keys():
             of.write(word.strip() + ' ' + str(self._word_dic[word]) + '\n')
         of.close()
-
-    def save_type_dic(self, file):
-        of = open(file, "w", encoding="utf-8")
+        print('word编号保存成功')
+        print('正在保存类别编号....')
+        of = open(type_file, "w", encoding="utf-8")
         for type in self._type_dic.keys():
             of.write(type.strip() + ' ' + str(self._type_dic[type]) + '\n')
         of.close()
+        print('类别编号保存成功')
+
+    def load(self, vector_file, word_file, type_file):
+        print('正在读取向量....')
+        self._input_df = pd.read_csv(vector_file, sep=',', header=None, encoding="utf-8", nrows=None)
+        print('正在读取word编号....')
+        with open(word_file, 'r', encoding="utf-8") as wf:
+            for line in wf:
+                self._add_word(line.split(" ")[0].strip())
+        print('正在读取类别编号...')
+        with open(type_file, 'r', encoding="utf-8") as tf:
+            for line in tf:
+                self._add_type(line.split(" ")[0].strip())
+        return self._input_df
 
     def _add_type(self, type):
         types = type.split('--')

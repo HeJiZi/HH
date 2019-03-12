@@ -35,7 +35,7 @@ class CnnModel:
         :return:
         """
         onehot_label = to_categorical(label)
-        self._model.fit(feature, onehot_label)
+        self._model.fit(feature, onehot_label, epochs=self._epochs, batch_size=self._batch_size)
 
     def test(self, feature, label):
         """
