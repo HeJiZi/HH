@@ -2,5 +2,6 @@
 /.idea
 /data
 !/data/train.tsv
-!/data/dict.txt
+!/data/my_dict.txt
+!/data/stop_words.txt
 *.pyc
