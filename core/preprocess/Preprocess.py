@@ -41,9 +41,8 @@ class Preprocess:
             words = cut.get_cut().do(item_name, True)
             for word in words:
                 self._add_word(word)
-                input_row.extend(self._compute_sub_word(word))
-            for word in words:
                 input_row.append(self._word_dic[word])
+                input_row.extend(self._compute_sub_word(word))
             input_row.extend(self._compute_ngram_word(words))
             _inputs_vec.append(input_row)
             print('已完成[{0}/{1}]---------------------'.format(index + 1, ori_df_len))

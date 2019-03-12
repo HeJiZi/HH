@@ -63,3 +63,16 @@ def get_classes(classes_file):
                     type_index = t[i].strip()  # 去除行尾的换行符
             dic[type_name] = type_index
     return dic
+
+
+import tensorflow
+
+
+def is_gpu_available(cuda_only=True):
+    from tensorflow.python.client import device_lib as _device_lib
+    if cuda_only:
+        return any((x.device_type == 'GPU')
+                   for x in _device_lib.list_local_devices())
+    else:
+        return any((x.device_type == 'GPU' or x.device_type == 'SYCL')
+                   for x in _device_lib.list_local_devices())
