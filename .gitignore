@@ -1,7 +1,9 @@
 
 /.idea
-/data
+/data/*
 !/data/train.tsv
 !/data/my_dict.txt
 !/data/stop_words.txt
+
+
 *.pyc
