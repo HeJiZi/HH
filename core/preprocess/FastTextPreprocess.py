@@ -48,53 +48,11 @@ class FastTextPreprocess(Preprocess):
         return self._data_table
 
 
-from python_example import TreeNode as tn
-import python_example as m
-import queue
 
-
-class _TreeNode:
-
-    def __init__(self, name="", node=None):
-        if node is None:
-            self._tn = tn(name)
-        else:
-            self._tn = node
-        self._children = {}
-        self._parent = None
-
-    @property
-    def name(self):
-        return tn.name(self._tn)
-
-    @property
-    def parent(self):
-        return self._parent
-
-    def add_chlid(self, node_name):
-        if node_name not in self._children.keys():
-            node = tn.add_child(self._tn, node_name)
-            wrapper_node = _TreeNode(node=node)
-            self._children[node_name] = wrapper_node
-            wrapper_node._parent = self
-
-    def get_child(self, name):
-        return self._children[name]
-
-    def bfs(self):
-        m.print_node(self._tn)
-        q = queue.Queue()
-        for n in self._children.values():
-            m.print_node(n._tn)
-            q.put(n)
-        while not q.empty():
-            n = q.get()
-            m.print_node(n._tn)
-            for c in n._children.values():
-                q.put(c)
 
 def bulidTree(types):
-    root = create_node("__root__")
+    import fastText
+    root = fastText.create_node("__root__")
     for type in types:
         level_type = type.split('--')
         root.add_chlid(level_type[0])
@@ -106,8 +64,6 @@ def bulidTree(types):
     return root
 
 
-def create_node(name):
-    return _TreeNode(name)
 
 
 if __name__ == '__main__':
@@ -119,12 +75,12 @@ if __name__ == '__main__':
     p = Path()
     f = p.join(p.data_directory, 'tempTrain.txt')
     ftp = FastTextPreprocess(p.ori_data)
-    # ftp.compile()
-    # ftp.save(f)
+    ftp.compile()
+    ftp.save(f)
 
     x, y = ftp.load(f)
     a = bulidTree(y)
-    a.bfs()
+    # a.bfs()
 
 
     # m.receiveTree(a)
