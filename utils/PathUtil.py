@@ -3,15 +3,13 @@
 """
 import os
 
-seg = "\\"
-
 
 class Path:
     root = ''
 
     def __init__(self):
         cur_path = os.path.abspath(os.path.dirname(__file__))
-        self.root = cur_path[:cur_path.find("HH\\") + len("HH")].replace("\\", seg)
+        self.root = cur_path[:cur_path.rfind("HH"+os.path.sep) + len("HH")]
 
     @property
     def data_directory(self):

@@ -52,7 +52,7 @@ class FastTextPreprocess(Preprocess):
 
 def bulidTree(types):
     import fastText
-    root = fastText.create_node("__root__")
+    root = fastText.create_root_node()
     for type in types:
         level_type = type.split('--')
         root.add_chlid(level_type[0])
@@ -69,23 +69,21 @@ def bulidTree(types):
 if __name__ == '__main__':
     from utils.PathUtil import Path
 
-    # import fastText
+    import fastText
     from sklearn.model_selection import train_test_split
 
     p = Path()
     f = p.join(p.data_directory, 'tempTrain.txt')
     ftp = FastTextPreprocess(p.ori_data)
-    ftp.compile()
-    ftp.save(f)
+    # ftp.compile()
+    # ftp.save(f)
 
     x, y = ftp.load(f)
     a = bulidTree(y)
     # a.bfs()
 
-
-    # m.receiveTree(a)
-
-    # x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=520)
     #
-    # cls = fastText.fit(x_train, y_train)
-    # print(cls.predict_ndarray(x_test, y_test))
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=520)
+
+    cls = fastText.fit(x_train, y_train, rootNode=a)
+    print(cls.predict_ndarray(x_test, y_test))
