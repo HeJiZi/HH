@@ -4,18 +4,6 @@ import numpy as np
 
 
 class Preprocess:
-    _data_file = None
-    _encoding = None
-    _type_dic = {}
-    _word_dic = {}
-    _ori_df = None
-
-    _maxn = 0
-    _minn = 0
-    _wordngram = 0
-    _type_size = 0
-    _word_size = 1
-    _level = 3
 
     def __init__(self, data_file, encoding='gb18030', minn=3, maxn=6, wordngram=1, level=3):
         self._data_file = data_file
@@ -25,6 +13,14 @@ class Preprocess:
         self._wordngram = wordngram
         self._level = level
         self._input_df = None
+        self._type_size = 0
+        self._word_size = 1
+
+        self._data_file = None
+        self._encoding = None
+        self._type_dic = {}
+        self._word_dic = {}
+        self._ori_df = None
 
     def compile(self):
         """

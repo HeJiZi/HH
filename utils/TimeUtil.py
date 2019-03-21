@@ -18,3 +18,7 @@ def count_time():
 
 def print_time():
     print(time.strftime('%Y.%m.%d.%H.%I.%M.%S', time.localtime(time.time())))
+
+
+def get_formate_time():
+    return time.strftime('%Y-%m-%d_%H.%I.%M', time.localtime(time.time()))
