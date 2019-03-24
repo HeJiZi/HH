@@ -1,25 +1,30 @@
-from core.preprocess.Preprocess import Preprocess
 import pandas as pd
 import core.preprocess.Cut as cut
 
 
-class FastTextPreprocess(Preprocess):
-    _data_table = None
+class FastTextPreprocess:
     _cut_off_line = "----------------------------------------------------------------"
 
-    def compile(self):
-        _ori_df = pd.read_csv(self._data_file, sep='\t', encoding=self._encoding, nrows=None)
-        ori_df_len = len(_ori_df)
+    def __init__(self, data_file, encoding='gb18030'):
+        self._data_table = None
+        self._ori_np = pd.read_csv(data_file, sep='\t', encoding=encoding, nrows=None).values
+
+    @staticmethod
+    def _type_name(name, level):
+        types = name.split('--')
+        return "--".join(types[:level])
+
+    def compile(self, level=3):
+        ori_df_len = len(self._ori_np)
         types = []
         item_names = []
-        for index, row in _ori_df.iterrows():
-            row_words = []
-            types.append(row[1])
-            item_name = row[0]
+        for index in range(0, ori_df_len):
+            types.append(self._type_name(self._ori_np[index, 1], level))
+            item_name = self._ori_np[index, 0]
             item_names.append(cut.get_cut().do(item_name, True))
             if index & 0xfff == 0:
-                print('已完成[{0}/{1}]---------------------'.format(index + 1, ori_df_len))
-        print('已完成')
+                print('分词中[{0}/{1}]---------------------'.format(index + 1, ori_df_len))
+        print('分词已完成')
         self._data_table = [item_names, types]
         return self._data_table
 
@@ -30,6 +35,14 @@ class FastTextPreprocess(Preprocess):
         of.write(self._cut_off_line + '\n')
         of.write("\n".join(self._data_table[1]))
         of.close()
+
+    def update_type(self, level):
+        ori_df_len = len(self._ori_np)
+        for index in range(0, ori_df_len):
+            self._data_table[1][index] = self._type_name(self._ori_np[index, 1], level)
+            if index & 0xfff == 0:
+                print('更新类别中[{0}/{1}]---------------------'.format(index + 1, ori_df_len))
+        print('更新已完成')
 
     def load(self, file):
         item_names = []
@@ -48,88 +61,48 @@ class FastTextPreprocess(Preprocess):
         return self._data_table
 
 
-from python_example import TreeNode as tn
-import python_example as m
-import queue
-
-
-class _TreeNode:
-
-    def __init__(self, name="", node=None):
-        if node is None:
-            self._tn = tn(name)
-        else:
-            self._tn = node
-        self._children = {}
-        self._parent = None
-
-    @property
-    def name(self):
-        return tn.name(self._tn)
-
-    @property
-    def parent(self):
-        return self._parent
-
-    def add_chlid(self, node_name):
-        if node_name not in self._children.keys():
-            node = tn.add_child(self._tn, node_name)
-            wrapper_node = _TreeNode(node=node)
-            self._children[node_name] = wrapper_node
-            wrapper_node._parent = self
-
-    def get_child(self, name):
-        return self._children[name]
-
-    def bfs(self):
-        m.print_node(self._tn)
-        q = queue.Queue()
-        for n in self._children.values():
-            m.print_node(n._tn)
-            q.put(n)
-        while not q.empty():
-            n = q.get()
-            m.print_node(n._tn)
-            for c in n._children.values():
-                q.put(c)
-
-def bulidTree(types):
-    root = create_node("__root__")
-    for type in types:
-        level_type = type.split('--')
-        root.add_chlid(level_type[0])
-        p1 = root.get_child(level_type[0])
-        level2_name = '--'.join(level_type[:2])
-        p1.add_chlid(level2_name)
-        p2 = p1.get_child(level2_name)
-        p2.add_chlid('--'.join(level_type))
-    return root
-
-
-def create_node(name):
-    return _TreeNode(name)
+# def bulid_tree(types):
+#     import fastText
+#     root = fastText.create_root_node()
+#     for type in types:
+#         level_type = type.split('--')
+#         root.add_chlid(level_type[0])
+#         p1 = root.get_child(level_type[0])
+#         level2_name = '--'.join(level_type[:2])
+#         p1.add_chlid(level2_name)
+#         p2 = p1.get_child(level2_name)
+#         p2.add_chlid('--'.join(level_type))
+#     return root
 
 
 if __name__ == '__main__':
     from utils.PathUtil import Path
+    import time
 
-    # import fastText
+    import fastText
     from sklearn.model_selection import train_test_split
 
     p = Path()
     f = p.join(p.data_directory, 'tempTrain.txt')
-    ftp = FastTextPreprocess(p.ori_data)
+    ftp = FastTextPreprocess(p.train80_1, encoding="utf-8")
+    model = p.join(p.model_directory, 'temp_model.fs')
+
     # ftp.compile()
     # ftp.save(f)
 
     x, y = ftp.load(f)
-    a = bulidTree(y)
-    a.bfs()
+    # ftp.update_type(level=1)
 
+    # a = bulidTree(y)
+    # a.bfs()
 
-    # m.receiveTree(a)
-
-    # x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=520)
     #
-    # cls = fastText.fit(x_train, y_train)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=520)
+    #
+    # cls = fastText.fit(x_train, y_train, wordNgrams=1, epoch=7)
+    # cls.save_model(model)
+    cls = fastText.load_model(model)
+
+    vs = cls.predict_prob(x_test)
+
     # print(cls.predict_ndarray(x_test, y_test))
