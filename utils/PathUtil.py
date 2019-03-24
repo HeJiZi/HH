@@ -30,8 +30,30 @@ class Path:
         return path
 
     @property
+    def model_directory(self):
+        path = os.path.join(self.root, 'model')
+        if os.path.isdir(path) is False:
+            os.mkdir(path)
+        return path
+
+    @property
+    def analyse_directory(self):
+        path = os.path.join(self.data_directory, 'analyze')
+        if os.path.isdir(path) is False:
+            os.mkdir(path)
+        return path
+
+    @property
     def ori_data(self):
         return os.path.join(self.data_directory, 'train.tsv')
+
+    @property
+    def train80_1(self):
+        return self.join(self.data_directory, 'train80_1.tsv')
+
+    @property
+    def test20_1(self):
+        return self.join(self.data_directory, 'test20_1.tsv')
 
     @property
     def stop_words(self):
@@ -48,10 +70,6 @@ class Path:
     @property
     def dict(self):
         return os.path.join(self.data_directory, 'dict.txt')
-
-    @property
-    def custom_dict(self):
-        return os.path.join(self.data_directory, 'custom_dict.txt')
 
     @property
     def record_result(self):
