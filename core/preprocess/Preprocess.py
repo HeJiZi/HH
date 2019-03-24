@@ -43,8 +43,8 @@ class Preprocess:
             for word in words:
                 self._add_word(word)
                 input_row.append(self._word_dic[word])
-                input_row.extend(self._compute_sub_word(word))
-            input_row.extend(self._compute_ngram_word(words))
+                # input_row.extend(self._compute_sub_word(word))
+            # input_row.extend(self._compute_ngram_word(words))
             inputs_vec.append(input_row)
             if index & 0xfff == 0:
                 print('已完成[{0}/{1}]---------------------'.format(index + 1, ori_df_len))

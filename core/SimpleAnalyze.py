@@ -1,13 +1,12 @@
 from core.preprocess.Preprocess import Preprocess
 from core.model.CnnModel import CnnModel
-from core.preprocess.PreprocessPlus import PreprocessPlus
 from utils.PathUtil import Path
 from sklearn.model_selection import train_test_split
 
 if __name__ == '__main__':
     path = Path()
     # pre = Preprocess(path.ori_data, level=1)
-    pre = PreprocessPlus(path.ori_data, level=3 )
+    pre = Preprocess(path.ori_data, level=3 )
     df = pre.compile()
     pre.save(path.vectors, path.word_code, path.type_code)
     # df = pre.load(path.vectors, path.word_code, path.type_code)
