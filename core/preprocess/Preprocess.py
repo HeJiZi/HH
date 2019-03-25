@@ -16,8 +16,6 @@ class Preprocess:
         self._type_size = 0
         self._word_size = 1
 
-        self._data_file = None
-        self._encoding = None
         self._type_dic = {}
         self._word_dic = {}
         self._ori_df = None
