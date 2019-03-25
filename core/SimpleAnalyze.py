@@ -19,15 +19,15 @@ if __name__ == '__main__':
     current_epoch = 5
     step = 5
     data = []
+    with open("../data/acc.csv", "w", encoding="utf-8") as f:
+        f.write('损失,成功率,轮询'+'\n')
     while current_epoch <= 40:
         cnn = CnnModel(df.shape[1] - 1, pre.word_size, pre.type_size, epochs=current_epoch)
         cnn.start_train(x_train.values, y_train.values)
         loss, acc = cnn.test(x_test.values, y_test.values)
-        data.append([loss, acc, current_epoch])
+        with open("../data/acc.csv", "a", encoding="utf-8") as f:
+            f.write(','.join([str(loss), str(acc), str(current_epoch)]) + '\n')
         current_epoch += step
 
     # print(acc)
-    with open("../data/acc.csv", "w") as f:
-        f.write('损失,成功率,轮询'+'\n')
-        for da in data:
-            f.write(",".join(da)+'\n')
+
