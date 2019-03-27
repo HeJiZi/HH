@@ -109,14 +109,31 @@ def predict(cls, x_test, y_test, out_file):
     print("正确数：", rightNum, "总数：", len(probs))
 
 
-def get_type_divid():
-    type_divide_file = p.join(p.save_directory, 'type_divid.txt')
-    of = open(type_divide_file, "r")
-    result = []
-    for i in range(0, 3):
-        result.append(set(of.readline().strip().split(',')))
-    of.close()
-    return result
+# def get_type_divid():
+#     type_divide_file = p.join(p.save_directory, 'type_divid.txt')
+#     of = open(type_divide_file, "r")
+#     result = []
+#     for i in range(0, 3):
+#         result.append(set(of.readline().strip().split(',')))
+#     of.close()
+#     return result
+def time_test(cls, x_test, y_test,):
+    import time
+    start = time.time()
+    right_num = 0
+    # for i in range(0, len(x_test)):
+    #     cls.predict_label(x_test[i])
+        # if y_test[i] == cls.predict_label(x_test[i]):
+        #     right_num += 1
+
+    y = cls.predict_labels(x_test)
+    for i in range(0, len(x_test)):
+        if y_test[i] == y[i]:
+            right_num += 1
+    end = time.time()
+    print(end - start, ',', right_num)
+    return  y
+
 
 if __name__ == '__main__':
     p = Path()
@@ -129,56 +146,36 @@ if __name__ == '__main__':
     trainP = FastTextPreprocess(p.train80_1, encoding="utf-8")
     testP = FastTextPreprocess(p.test20_1, encoding="utf-8")
 
+
     # trainP.set_divid(get_type_divid())
     # testP.set_divid(get_type_divid())
-    # x_train, y_train = trainP.compile(level=3)
-    # x_test, y_test = testP.compile(level=3)
+    x_train, y_train = trainP.compile(level=3)
+    x_test, y_test = testP.compile(level=3)
     # trainP.save(train_save)
     # testP.save(test_save)
 
+    # x_train, y_train = trainP.load(train_save)
+    # x_test, y_test = testP.load(test_save)
 
-    x_train, y_train = trainP.load(train_save)
-    x_test, y_test = testP.load(test_save)
-
-    trainP.update_type(level=3)
-    testP.update_type(level=3)
+    # trainP.update_type(level=3)
+    # testP.update_type(level=3)
     #
     # trainP.save(train_save)
     # testP.save(test_save)
 
-    cc = list(zip(x_train, y_train))
-    random.shuffle(cc)
-    x_train[:], y_train[:] = zip(*cc)
+    # cc = list(zip(x_train, y_train))
+    # random.shuffle(cc)
+    # x_train[:], y_train[:] = zip(*cc)
 
-    a = [
-        ['童书', 0.2],
-        ['中小学教辅', 0.25],
-        ['考试', 0.4],
-        ['建筑', 0.5],
-        ['文学', 0.6],
-        ['小说', 0.6],
-        ['大中专教材教辅', 0.6],
-        ['历史', 0.6],
-        ['艺术', 0.6],
-        ['文化用品', 0.7],
-        ['进口原版', 0.7],
-        ['工业技术', 0.8],
-        # ['旅游/地图', 2],
-        # ['哲学/宗教', 2],
-        # ['健身与保健', 2],
-        # ['青春文学', 2],
-        # ['经济', 2],
-        # ['金融与投资', 2],
-        # ['传记', 2],
-        # ['文化', 2],
-        # ['育儿/家教', 2],
-    ]
+    # cls = fastText.fit(x_train, y_train, wordNgrams=2, epoch=50, sampleWeight=[])
+    # cls.save_model(model)
+    cls = fastText.load_model(model)
 
-    cls = fastText.fit(x_train, y_train, wordNgrams=2, epoch=7, sampleWeight=[])
-    cls.save_model(model)
-    # cls = fastText.load_model(model)
     # print(cls.predict_ndarray(x_test,y_test))
-    predict(cls, x_test=x_test, y_test=y_test, out_file=wrongExamples)
+    # predict(cls, x_test=x_test, y_test=y_test, out_file=wrongExamples)
+    res = time_test(cls, x_test, y_test)
+
+
 
     # labels = cls.get_labels()
     # type_divide_file = p.join(p.save_directory, 'type_divid.txt')

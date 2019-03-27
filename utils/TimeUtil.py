@@ -22,3 +22,4 @@ def print_time():
 
 def get_formate_time():
     return time.strftime('%Y-%m-%d_%H.%I.%M', time.localtime(time.time()))
+
