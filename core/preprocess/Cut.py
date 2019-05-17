@@ -1,18 +1,19 @@
 """
 分词工具
 """
-import jieba
+# import jieba
 import thulac
+# import jieba_fast
+import cppJieba
 
 from utils.PathUtil import Path
-
 _cut = None
 
 
 def get_cut():
     global _cut
     if _cut is None:
-        _cut = JiebaCut()
+        _cut = CppJiebaCut()
     return _cut
 
 
@@ -33,15 +34,32 @@ class Cut:
         return
 
 
+# class JiebaFastCut(Cut):
+#     def __init__(self):
+#         jieba_fast.load_userdict(Path().my_dict)
+#         return
 
-class JiebaCut(Cut):
-    def __init__(self):  # TODO jieba 分词工具初始化
-        jieba.load_userdict(Path().my_dict)
+#     def do(self, sentence, stopwords=False):
+#         if not stopwords:
+#             return jieba_fast.cut(sentence)
+#         else:
+#             words = self.do(sentence)
+#             result = []
+#             for word in words:
+#                 if word.isalpha() and word not in self.stop_words:
+#                     result.append(word)
+#             return result
+
+
+class CppJiebaCut(Cut):
+    def __init__(self):
+        cppJieba.load_userdict(Path().my_dict)
+        cppJieba.set_stop_word(Path().stop_words)
         return
 
     def do(self, sentence, stopwords=False):
         if not stopwords:
-            return jieba.cut(sentence)
+            return cppJieba.cut(sentence)
         else:
             words = self.do(sentence)
             result = []
@@ -49,6 +67,22 @@ class JiebaCut(Cut):
                 if word.isalpha() and word not in self.stop_words:
                     result.append(word)
             return result
+
+# class JiebaCut(Cut):
+#     def __init__(self):  # TODO jieba 分词工具初始化
+#         jieba.load_userdict(Path().my_dict)
+#         return
+
+#     def do(self, sentence, stopwords=False):
+#         if not stopwords:
+#             return jieba.cut(sentence)
+#         else:
+#             words = self.do(sentence)
+#             result = []
+#             for word in words:
+#                 if word.isalpha() and word not in self.stop_words:
+#                     result.append(word)
+#             return result
 
 
 class ThuCut(Cut):
