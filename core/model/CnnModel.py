@@ -21,6 +21,10 @@ class CnnModel:
         self._model = models.Sequential()
         self._model.add(Embedding(word_num, 128, input_length=input_length))
         self._model.add(layers.Conv1D(128, 3, activation='relu'))
+        self._model.add(layers.MaxPool1D(2))
+        self._model.add(layers.Conv1D(128, 3, activation='relu'))
+        self._model.add(layers.MaxPool1D(2))
+        self._model.add(layers.Conv1D(128, 3, activation='relu'))
         self._model.add(layers.Flatten())
         self._model.add(layers.Dense(64, activation="relu"))
         self._model.add(layers.Dense(type_num, activation='softmax'))
@@ -35,7 +39,7 @@ class CnnModel:
         :return:
         """
         onehot_label = to_categorical(label)
-        self._model.fit(feature, onehot_label, epochs=self._epochs, batch_size=self._batch_size)
+        return self._model.fit(feature, onehot_label, validation_split=0.2, epochs=self._epochs, batch_size=self._batch_size)
 
     def test(self, feature, label):
         """
