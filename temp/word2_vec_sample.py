@@ -1,173 +1,233 @@
-import os
-import random
 import tensorflow as tf
-import collections
 import numpy as np
+import time
 
-# def load_w2c_textcn_dataset(path='./data/'):
-#     """
-#     Returns
-#     --------
-#     word_list_all : a list
-#         a list of string (word).\n
-#      要求：中文语料需要先分词
-#     """
-#
-#     print("Load or Download chinese text corpus Dataset> {}".format(path))
-#
-#     filename = 'wiki_cn.cut'
-#     word_list_all = []
-#     with open(os.path.join(path, filename)) as f:
-#         for line in f:
-#             word_list = line.strip().split()
-#             for idx, word in enumerate(word_list):
-#                 word_list[idx] = word_list[idx].decode('utf-8')
-#                 # print word_list[idx]
-#                 word_list_all.append(word_list[idx])
-#     return word_list_all
-#
-#
-# # words = load_w2c_textcn_dataset(path='./data/')
-# # print(len(words))
-#
-# import collections
-#
-# vocabulary_size = 200000
-# count = [['UNK', -1]]
-# count.extend(collections.Counter(words).most_common(vocabulary_size - 1))
-# dictionary = dict()
-#
-# for word, _ in count:
-#     dictionary[word] = len(dictionary)
-# data = list()
-# unk_count = 0
-# for word in words:
-#     if word in dictionary:
-#         index = dictionary[word]
-#     else:
-#         index = 0  # dictionary['UNK']
-#         unk_count = unk_count + 1
-#     data.append(index)
-#
-# count[0][1] = unk_count
-# reverse_dictionary = dict(zip(dictionary.values(), dictionary.keys()))
-# del words
-#
-# data_index = 0
-#
-#
-# # batch生成器
-# def generate_batch(batch_size, num_skips, skip_window):
-#     global data_index
-#     batch = np.ndarray(shape=(batch_size), dtype=np.int32) # 生成1*batch_size的向量
-#     labels = np.ndarray(shape=(batch_size, 1), dtype=np.int32) # 生成batch_size*1 的向量
-#     span = 2 * skip_window + 1  # [ skip_window target skip_window ]
-#     buf = collections.deque(maxlen=span)
-#     for _ in range(span):
-#         buf.append(data[data_index])
-#         data_index = (data_index + 1) % len(data)
-#     for i in range(batch_size // num_skips):
-#         target = skip_window  # target label at the center of the buffer
-#         targets_to_avoid = [skip_window]
-#         for j in range(num_skips):
-#             while target in targets_to_avoid:
-#                 target = random.randint(0, span - 1)
-#             targets_to_avoid.append(target)
-#             batch[i * num_skips + j] = buf[skip_window]
-#             labels[i * num_skips + j, 0] = buf[target]
-#         buf.append(data[data_index])
-#         data_index = (data_index + 1) % len(data)
-#     return batch, labels
+from sklearn.model_selection import train_test_split
 
-
-# batch_size = 128
-# embedding_size = 128  # 生成向量维度.
-# skip_window = 2  # 左右窗口.
-# num_skips = 2  # 同一个keyword产生label的次数.
-# num_sampled = 64  # 负样本抽样数.
-#
-# graph = tf.Graph()
-#
-# with graph.as_default(), tf.device('/cpu:0'):
-#     train_dataset = tf.placeholder(tf.int32, shape=[batch_size])
-#     train_labels = tf.placeholder(tf.int32, shape=[batch_size, 1])
-#
-#     embeddings = tf.Variable(tf.random_uniform([vocabulary_size, embedding_size], -1.0, 1.0))
-#     softmax_weights = tf.Variable(
-#         tf.truncated_normal([vocabulary_size, embedding_size], stddev=1.0 / np.sqrt(embedding_size)))
-#     softmax_biases = tf.Variable(tf.zeros([vocabulary_size]))
-#
-#     embed = tf.nn.embedding_lookup(embeddings, train_dataset)
-#     loss = tf.reduce_mean(
-#         tf.nn.sampled_softmax_loss(weights=softmax_weights, biases=softmax_biases, inputs=embed,
-#                                    labels=train_labels, num_sampled=num_sampled, num_classes=vocabulary_size))
-#
-#     optimizer = tf.train.AdagradOptimizer(1.0).minimize(loss)
-#
-#     norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True))
-#     normalized_embeddings = embeddings / norm
 from temp.TensorFlowPreprocess import TensorFlowPreprocess
 from utils.PathUtil import Path
 
-vocabulary_size = 2000000
+vocabulary_size = 200000
+max_num_in_line = 50
 embedding_size = 50
 label_size = 100
-learning_rate = 0.1
+learning_rate = 0.01
+batch_size = 32
+test_batch_size = 10000
+epochs = 60
+print_step = 6
+gpu_num = 2
 
 
 def conv_net(x):
     embeddings = tf.Variable(tf.random_uniform([vocabulary_size, embedding_size], 0, 1.0))
     weight_matrix = tf.Variable(tf.truncated_normal([embedding_size, label_size], stddev=1.0 / np.sqrt(label_size)))
     feature = tf.nn.embedding_lookup(embeddings, x)
-    state = tf.reduce_sum(feature, axis=0)
-    output = tf.matmul(tf.reshape(state, [1, 5]), weight_matrix)
+    state = tf.reduce_sum(feature, axis=1)
+    output = tf.matmul(state, weight_matrix)
     return output
 
 
-def train():
-    X = tf.placeholder(tf.float32, [None, embedding_size])
-    Y = tf.placeholder(tf.int16, [1, label_size])
-    output = conv_net(X)
-    loss = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(
-            labels=Y,
-            logits=output
-        )
-    )
-    optimizer = tf.train.AdagradOptimizer(learning_rate).minimize(loss)
-    with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
-        for step in range(1, num_steps + 1):
-            batch_x, batch_y = mnist.train.next_batch(batch_size)
-            sess.run(train_op, feed_dict={X: batch_x, Y: batch_y})
-            if step % display_step == 0 or step == 1:
-                loss_value, acc = sess.run([loss, accuracy], feed_dict={X: batch_x, Y: batch_y})
+def transform_feature(from_data, word_dict):
+    length = len(from_data)
+    result = np.zeros([length, max_num_in_line])
+    for i in range(length):
+        for j in range(max_num_in_line):
+            if j >= len(from_data[i]):
+                break
+            result[i, j] = 1 + word_dict[from_data[i][j]]  # 编号为0代表没有单词，+1跳过该编号
+    return result
 
 
-# def train_single()
+def to_one_hot(labels, label_num):
+    length = len(labels)
+    result = np.zeros([length, label_num])
+    for i in range(length):
+        result[i, labels[i]] = 1
+    return result
 
-def start():
+
+def compute_feed_time(data_num, batch_size):
+    temp = data_num // batch_size
+    return temp + 1 if data_num % batch_size != 0 else temp
+
+
+def train_single():
     path = Path()
     tp = TensorFlowPreprocess(path.ori_data)
-    X, Y = tp.compile()
+    names, types = tp.compile()
+    train_names, test_names, train_types, test_types = train_test_split(
+        names, types, test_size=.2, random_state=520)
+
     global label_size
     label_size = tp.label_dict.__len__()
 
+    X = tf.placeholder(tf.int32, [None, None])
+    Y = tf.placeholder(tf.float32, [None, label_size])
+    output = conv_net(X)
+    probs = tf.nn.softmax(output)
+
+    loss = tf.reduce_mean(-tf.reduce_sum(Y * tf.log(probs), reduction_indices=[1]))
+    optimizer = tf.train.AdagradOptimizer(learning_rate).minimize(loss)
+
+    correct_prediction = tf.equal(tf.argmax(probs, 1), tf.argmax(Y, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+    train_name_len = len(train_names)
+    test_name_len = len(test_names)
+    test_x = transform_feature(test_names, tp.word_dict)
+    test_y = to_one_hot([tp.label_dict[label] for label in test_types], label_size)
+
+    train_times = compute_feed_time(train_name_len, batch_size)
+    test_times = compute_feed_time(test_name_len, test_batch_size)
+
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        for epoch in range(epochs):
+            for step in range(0, train_times):
+                start = step * batch_size
+                end = (step + 1) * batch_size if step < train_times - 1 else train_name_len
+                batch_x = transform_feature(train_names[start:end], tp.word_dict)
+                batch_y = to_one_hot([tp.label_dict[label] for label in train_types[start:end]], label_size)
+
+                sess.run(optimizer, feed_dict={X: batch_x, Y: batch_y})
+                if step % print_step == 0 or step == train_times - 1:
+                    loss_val, acc = sess.run([loss, accuracy], feed_dict={X: batch_x, Y: batch_y})
+                    print("--已完成[{0}/{1}],loss_val={2:.2f},acc={3:.2f}--".format(
+                        end, train_name_len, loss_val, acc))
+
+            test_loss_val = 0
+            test_acc = 0
+            for step in range(0, test_times):  # 显存不足，分批次feed再求均值以解决问题
+                start = step * test_batch_size
+                end = (step + 1) * test_batch_size if step < test_times - 1 else test_name_len
+                batch_x = test_x[start:end]
+                batch_y = test_y[start:end]
+
+                loss_val, acc = sess.run([loss, accuracy], feed_dict={X: batch_x, Y: batch_y})
+                test_loss_val += loss_val
+                test_acc += acc
+                print("--已完成[{0}/{1}]--".format(end, test_name_len))
+            print("--已完成[{0}/{1}]轮询，test_loss_val={2:.2f},test_acc={3:.2f}--".format(
+                epoch + 1, epochs, test_loss_val / test_times, test_acc / test_times
+            ))
+
+
+def average_gradients(tower_grads):
+    average_grads = []
+    for grad_and_vars in zip(*tower_grads):
+        grads = []
+        for g, _ in grad_and_vars:
+            expend_g = tf.expand_dims(g, 0)
+            grads.append(expend_g)
+        grad = tf.concat(grads, 0)
+        grad = tf.reduce_mean(grad, 0)
+        v = grad_and_vars[0][1]
+        grad_and_var = (grad, v)
+        average_grads.append(grad_and_var)
+    return average_grads
+
+
+def train_parallel():
+    path = Path()
+    tp = TensorFlowPreprocess(path.ori_data)
+    names, types = tp.compile()
+    train_names, test_names, train_types, test_types = train_test_split(
+        names, types, test_size=.2, random_state=520)
+
+    global label_size
+    label_size = tp.label_dict.__len__()
+
+    X = tf.placeholder(tf.int32, [None, None])
+    Y = tf.placeholder(tf.float32, [None, label_size])
+
+    tower_grads = []
+    with tf.device("/cpu:0"):
+        optimizer = tf.train.AdamOptimizer(learning_rate)
+        with tf.variable_scope(tf.get_variable_scope()):
+            for i in range(gpu_num):
+                with tf.device("/gpu:%d" % i):
+                    with tf.name_scope("tower_%d" % i):
+                        _x = X[i * batch_size:(i + 1) * batch_size]
+                        _y = Y[i * batch_size:(i + 1) * batch_size]
+                        tf.get_variable_scope().reuse_variables()
+                        output = conv_net(_x)
+                        probs = tf.nn.softmax(output)
+
+                        loss = tf.reduce_mean(-tf.reduce_sum(Y * tf.log(probs), reduction_indices=[1]))
+                        grads = optimizer.compute_gradients(loss)
+                        tower_grads.append(grads)
+    grads = average_gradients(tower_grads)
+    train_op = optimizer.apply_gradients(grads)
+
+    test_output = conv_net(X)
+    test_probs = tf.nn.softmax(test_output)
+    test_loss = tf.reduce_mean(-tf.reduce_sum(Y * tf.log(test_probs), reduction_indices=[1]))
+
+    correct_prediction = tf.equal(tf.argmax(test_probs, 1), tf.argmax(Y, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+    train_name_len = len(train_names)
+    test_name_len = len(test_names)
+    test_x = transform_feature(test_names, tp.word_dict)
+    test_y = to_one_hot([tp.label_dict[label] for label in test_types], label_size)
+
+    train_times = compute_feed_time(train_name_len, batch_size * gpu_num)
+    test_times = compute_feed_time(test_name_len, test_batch_size)
+
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        for epoch in range(epochs):
+            for step in range(0, train_times):
+                start = step * batch_size
+                end = (step + 2) * batch_size if step < train_times - 1 else train_name_len
+                batch_x = transform_feature(train_names[start:end], tp.word_dict)
+                batch_y = to_one_hot([tp.label_dict[label] for label in train_types[start:end]], label_size)
+
+                sess.run(train_op, feed_dict={X: batch_x, Y: batch_y})
+                if step % print_step == 0 or step == train_times - 1:
+                    loss_val, acc = sess.run([test_loss, accuracy], feed_dict={X: batch_x, Y: batch_y})
+                    print("--已完成[{0}/{1}],loss_val={2:.2f},acc={3:.2f}--".format(
+                        end, train_name_len, loss_val, acc))
+
+            test_loss_val = 0
+            test_acc = 0
+            for step in range(0, test_times):  # 显存不足，分批次feed再求均值以解决问题
+                start = step * test_batch_size
+                end = (step + 1) * test_batch_size if step < test_times - 1 else test_name_len
+                batch_x = test_x[start:end]
+                batch_y = test_y[start:end]
+
+                loss_val, acc = sess.run([test_loss, accuracy], feed_dict={X: batch_x, Y: batch_y})
+                test_loss_val += loss_val
+                test_acc += acc
+                print("--已完成[{0}/{1}]--".format(end, test_name_len))
+            print("--已完成[{0}/{1}]轮询，test_loss_val={2:.2f},test_acc={3:.2f}--".format(
+                epoch + 1, epochs, test_loss_val / test_times, test_acc / test_times
+            ))
+
 
 if __name__ == '__main__':
-    start()
+    train_single()
     # sess = tf.Session()
+    #
     # embeddings = tf.Variable(tf.random_uniform([3, 5], 0, 1.0))
     # weight_matrix = tf.Variable(tf.truncated_normal([5, 3], stddev=1.0 / np.sqrt(3)))
-    # # softmax_weights = tf.Variable(
-    # #             tf.truncated_normal([3, 5], stddev=1.0 / np.sqrt(5)))
-    # # softmax_biases = tf.Variable(tf.zeros([3]))
-    # feature = tf.nn.embedding_lookup(embeddings, [0,1])
-    # state = tf.reduce_sum(feature, axis=0)
-    # output = tf.matmul(tf.reshape(state,[1,5]),weight_matrix)
-    # # prob = tf.nn.softmax(output)
-    # loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=[1], logits=output))
-    # optimizer = tf.train.AdagradOptimizer(1.0).minimize(loss)
+    # X = tf.placeholder(tf.int32, [None, None])
+    # Y = tf.placeholder(tf.float32, [None, 3])
+    # feature = tf.nn.embedding_lookup(embeddings, X)
+    # state = tf.reduce_sum(feature, axis=1)
+    # output = tf.matmul(state, weight_matrix)
+    # probs = tf.nn.softmax(output)
+    # loss = tf.reduce_mean(-tf.reduce_sum(Y * tf.log(probs), reduction_indices=[1]))
+    # optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(loss)
+    #
+    # # grad = optimizer.compute_gradients(loss)
+    #
     # sess.run(tf.global_variables_initializer())
-    # print(sess.run(optimizer))
+    #
+    # fe = [[0, 1,1], [1, 2, 1]]
+    # la = to_one_hot([1, 1], 3)
+    # print(sess.run(loss, feed_dict={X: fe, Y: la}))
+    #
     # sess.close()
